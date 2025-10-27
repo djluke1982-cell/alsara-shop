@@ -1,161 +1,108 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin · Alsara</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin - Alsara Villanueva</title>
   <style>
-    body{font-family:Inter,Arial;background:#f4f6f8;margin:0;padding:20px}
-    header{display:flex;align-items:center;justify-content:space-between}
-    .wrap{max-width:1100px;margin:16px auto}
-    .card{background:#fff;padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-    .cols{display:grid;grid-template-columns:1fr 380px;gap:16px}
-    input,button,select{padding:8px;border-radius:8px;border:1px solid #ddd}
-    .btn{background:#2c3e50;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-    .btn-danger{background:#c0392b}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
-    .status{padding:6px 8px;border-radius:6px;font-weight:600}
-    .s-nuevo{background:#fffaef;color:#a36b00}
-    .s-enproceso{background:#eaf6ff;color:#0a66c2}
-    .s-entregado{background:#eefbe7;color:#1a7f1a}
+    body { font-family: Arial, sans-serif; background: #f3f3f3; margin: 0; padding: 0; }
+    header { background: #2b7a0b; color: white; padding: 1rem; text-align: center; }
+    main { max-width: 800px; margin: 2rem auto; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    h2 { color: #2b7a0b; }
+    form { display: flex; flex-direction: column; gap: 1rem; }
+    input, button { padding: 0.5rem; font-size: 1rem; }
+    button { background: #2b7a0b; color: white; border: none; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+    button:hover { background: #236408; }
+    .productos { margin-top: 2rem; }
+    .producto { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; border-bottom: 1px solid #ddd; }
+    .producto img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+    .producto button { background: #c0392b; border: none; color: white; padding: 0.3rem 0.7rem; border-radius: 5px; cursor: pointer; }
+    .producto button:hover { background: #a93226; }
   </style>
 </head>
 <body>
-  <header class="wrap">
-    <h2>Admin · Alsara</h2>
-    <div>
-      <button id="btnLogout" class="btn btn-danger">Cerrar sesión</button>
-    </div>
+  <header>
+    <h1>🛒 Panel de Administración</h1>
+    <p>Alsara Villanueva de la Concepción</p>
   </header>
 
-  <main class="wrap">
-    <div class="cols">
-      <div>
-        <div class="card" style="margin-bottom:12px">
-          <h3>Nuevo producto</h3>
-          <form id="productForm">
-            <input name="name" placeholder="Nombre" required><br>
-            <input name="price" type="number" step="0.01" placeholder="Precio" required><br>
-            <input name="description" placeholder="Descripción"><br>
-            <input name="image" type="file" accept="image/*"><br>
-            <button class="btn" type="submit">Subir producto</button>
-            <span id="prodMsg" style="margin-left:8px;color:green"></span>
-          </form>
-        </div>
+  <main>
+    <h2>Agregar producto</h2>
+    <form id="formProducto">
+      <input type="text" id="nombre" placeholder="Nombre del producto" required>
+      <input type="number" step="0.01" id="precio" placeholder="Precio (€)" required>
+      <input type="text" id="imagen" placeholder="URL de la imagen" required>
+      <button type="submit">Agregar producto</button>
+    </form>
 
-        <div class="card">
-          <h3>Pedidos</h3>
-          <table id="ordersTable">
-            <thead><tr><th>ID</th><th>Cliente</th><th>Tel</th><th>Items</th><th>Estado</th><th>Acción</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <aside>
-        <div class="card">
-          <h3>Productos</h3>
-          <div id="productList"></div>
-        </div>
-      </aside>
+    <div class="productos">
+      <h2>Productos actuales</h2>
+      <div id="listaProductos"></div>
     </div>
   </main>
 
   <script>
-    const API = {
-      login: (u,p)=>fetch('/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:u,pass:p}),credentials:'include'}).then(r=>r.json()),
-      logout: ()=>fetch('/admin/logout',{method:'POST',credentials:'include'}).then(r=>r.json()),
-      session: ()=>fetch('/admin/session',{credentials:'include'}).then(r=>r.json()),
-      addProduct: fd => fetch('/api/products',{method:'POST',body:fd,credentials:'include'}).then(r=>r.json()),
-      listProducts: ()=>fetch('/api/products').then(r=>r.json()),
-      listOrders: ()=>fetch('/api/orders',{credentials:'include'}).then(r=>r.json()),
-      updateOrderStatus: (id,s)=>fetch(`/api/orders/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s}),credentials:'include'}).then(r=>r.json())
-    };
+    const form = document.getElementById('formProducto');
+    const lista = document.getElementById('listaProductos');
 
-    async function ensure() {
-      const s = await API.session();
-      if(!s.isAdmin){
-        // redirect to login UI simplified
-        const u = prompt('Usuario admin:');
-        const p = prompt('Contraseña:');
-        const res = await fetch('/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:u,pass:p}),credentials:'include'});
-        const data = await res.json();
-        if(!data.success) { alert('Credenciales incorrectas'); location.reload(); return; }
-      }
-      loadAll();
-    }
-
-    document.getElementById('btnLogout').addEventListener('click', async ()=>{
-      await API.logout();
-      location.reload();
-    });
-
-    document.getElementById('productForm').addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const res = await API.addProduct(fd);
-      if(res.success){ document.getElementById('prodMsg').innerText='Producto subido'; e.target.reset(); loadProducts(); setTimeout(()=>document.getElementById('prodMsg').innerText='',2500);}
-      else alert('Error al subir');
-    });
-
-    async function loadProducts(){
-      const prods = await API.listProducts();
-      const list = document.getElementById('productList');
-      list.innerHTML = prods.map(p=>`<div style="padding:8px;border-bottom:1px solid #eee"><strong>${p.name}</strong><br>${p.price.toFixed(2)} €</div>`).join('');
-    }
-
-    function statusClass(st){
-      if(st==='nuevo') return 'status s-nuevo';
-      if(st==='enproceso') return 'status s-enproceso';
-      if(st==='entregado') return 'status s-entregado';
-      return 'status';
-    }
-
-    async function loadOrders(){
-      const orders = await API.listOrders();
-      const tbody = document.querySelector('#ordersTable tbody');
-      tbody.innerHTML = '';
-      orders.forEach(o=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td style="font-size:12px">${o.id}</td>
-          <td>${o.customerName}</td>
-          <td>${o.customerPhone}</td>
-          <td style="font-size:13px">${o.items.map(i=>i.name+' x'+i.qty).join(', ')}</td>
-          <td><span class="${statusClass(o.status)}">${o.status}</span></td>
-          <td>
-            <select data-id="${o.id}" class="statusSel">
-              <option value="nuevo">nuevo</option>
-              <option value="enproceso">enproceso</option>
-              <option value="entregado">entregado</option>
-            </select>
-            <button data-id="${o.id}" class="btn" style="margin-left:6px">Actualizar</button>
-          </td>
+    async function cargarProductos() {
+      const res = await fetch('/api/productos');
+      const productos = await res.json();
+      lista.innerHTML = '';
+      productos.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'producto';
+        div.innerHTML = `
+          <div>
+            <img src="${p.imagen}" alt="${p.nombre}">
+            <strong>${p.nombre}</strong> - ${p.precio.toFixed(2)}€
+          </div>
+          <button onclick="eliminarProducto('${p.id}')">Eliminar</button>
         `;
-        tbody.appendChild(tr);
-      });
-      // set current selects
-      document.querySelectorAll('.statusSel').forEach(sel=>{
-        const id = sel.getAttribute('data-id');
-        const ord = orders.find(o=>o.id===id);
-        if(ord) sel.value = ord.status || 'nuevo';
-      });
-      document.querySelectorAll('button[data-id]').forEach(b=>{
-        b.addEventListener('click', async ()=>{
-          const id = b.getAttribute('data-id');
-          const sel = document.querySelector(`select[data-id="${id}"]`);
-          const status = sel.value;
-          await API.updateOrderStatus(id,status);
-          loadOrders();
-        });
+        lista.appendChild(div);
       });
     }
 
-    async function loadAll(){ loadProducts(); loadOrders(); }
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      const precio = parseFloat(document.getElementById('precio').value);
+      const imagen = document.getElementById('imagen').value.trim();
 
-    ensure();
+      if (!nombre || !imagen || isNaN(precio)) {
+        alert('❌ Completa todos los campos correctamente');
+        return;
+      }
+
+      const res = await fetch('/api/add-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, precio, imagen })
+      });
+
+      const data = await res.json();
+      if (data.ok) {
+        alert('✅ Producto agregado');
+        form.reset();
+        cargarProductos();
+      } else {
+        alert('❌ Error al agregar producto');
+      }
+    });
+
+    async function eliminarProducto(id) {
+      if (!confirm('¿Seguro que quieres eliminar este producto?')) return;
+      const res = await fetch(`/api/delete-product/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.ok) {
+        alert('🗑️ Producto eliminado');
+        cargarProductos();
+      } else {
+        alert('❌ Error al eliminar producto');
+      }
+    }
+
+    cargarProductos();
   </script>
 </body>
 </html>

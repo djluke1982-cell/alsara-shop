@@ -1,70 +1,43 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Alsara · Tienda</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --accent:#c0392b; /* rojo */
-      --accent-dark:#a32b22;
-      --bg:#f6f7f8;
-      --card:#ffffff;
-      --muted:#6b6b6b;
-    }
-    *{box-sizing:border-box}
-    body{font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);margin:0;color:#222}
-    header{background:linear-gradient(90deg,var(--accent),var(--accent-dark));color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
-    header h1{margin:0;font-size:20px}
-    .container{max-width:1100px;margin:18px auto;padding:0 16px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-    .card{background:var(--card);border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06);display:flex;flex-direction:column;height:100%}
-    .thumb{height:160px;border-radius:8px;object-fit:cover;margin-bottom:8px;background:#eee}
-    .title{font-weight:600;margin-bottom:6px}
-    .price{font-weight:700;color:var(--accent);margin-top:auto}
-    .add-btn{background:var(--accent);color:#fff;padding:8px 10px;border:none;border-radius:8px;cursor:pointer}
-    aside.cart{position:fixed;right:18px;bottom:18px;width:320px;background:linear-gradient(180deg,#fff,#fafafa);border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,0.12)}
-    aside h3{margin:0 0 8px 0}
-    .cart-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #eee}
-    .actions{display:flex;gap:8px;margin-top:8px}
-    .btn-secondary{background:#eee;border:none;padding:8px;border-radius:8px;cursor:pointer}
-    footer{padding:18px;text-align:center;color:var(--muted);font-size:14px;margin-top:60px}
-    input[type=text], input[type=tel]{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-top:6px}
-    .order-success{color:green;margin-top:8px}
-    @media(max-width:700px){aside.cart{position:static;width:auto;margin-top:16px}}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tienda - Pago a domicilio</title>
+<style>
+body{font-family: Arial,Helvetica,sans-serif;max-width:980px;margin:20px auto;padding:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{border:1px solid #ddd;padding:10px;border-radius:8px}
+img{max-width:100%;height:160px;object-fit:cover;border-radius:6px}
+input,button{padding:8px;margin:4px}
+</style>
 </head>
 <body>
-  <header>
-    <h1>Alsara · Villanueva de la Concepción</h1>
-    <div style="font-weight:600">Pedido a domicilio • WhatsApp notifications</div>
-  </header>
+<h1>Tienda - Pago a domicilio</h1>
 
-  <main class="container">
-    <section>
-      <h2>Productos</h2>
-      <div id="products" class="grid"></div>
-    </section>
 
-    <aside class="cart" id="cartPanel">
-      <h3>Tu pedido</h3>
-      <div id="cartItems"></div>
-      <div style="margin-top:8px">
-        <input id="customerName" type="text" placeholder="Tu nombre">
-        <input id="customerPhone" type="tel" placeholder="Teléfono">
-        <div class="actions">
-          <button class="add-btn" id="placeOrder">Enviar pedido</button>
-          <button class="btn-secondary" id="clearCart">Vaciar</button>
-        </div>
-        <div id="orderMsg" class="order-success"></div>
-      </div>
-    </aside>
-  </main>
+<section>
+<h2>Productos</h2>
+<div id="products" class="grid"></div>
+</section>
 
-  <footer>© Alsara Villanueva de la Concepción</footer>
 
-  <script src="/app.js"></script>
+<section style="margin-top:18px">
+<h2>Carrito</h2>
+<div id="cart"></div>
+<div style="margin-top:8px">
+<input id="customerName" placeholder="Tu nombre" />
+<input id="customerPhone" placeholder="Tu teléfono" />
+<button id="placeOrder">Hacer pedido (pago a domicilio)</button>
+</div>
+<div id="orderMsg" style="margin-top:8px;color:green"></div>
+</section>
+
+
+<hr />
+<p>¿Eres administrador? <a href="/admin.html">Accede al panel</a></p>
+
+
+<script src="app.js"></script>
 </body>
 </html>
